@@ -83,7 +83,7 @@
     "jest": "^30.0.3",
     "log": "^6.0.0",
     "loglevel": "^1.6.7",
-    "midnight-smoker": "1.1.1",
+    "midnight-smoker": "8.0.0",
     "neostandard": "^0.12.2",
     "pino-pretty": "^13.0.0",
     "pre-commit": "^1.2.2",
