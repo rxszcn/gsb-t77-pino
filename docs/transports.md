@@ -102,7 +102,11 @@ pino(transport)
 
 Pino applies level filtering in two different places depending on the transport configuration.
 
-#### A) Single `target` (or single `pipeline`)
+#### A) Single destination without a `level`
+
+This covers `pino.transport({ target: ... })`, `pino.transport({ pipeline: ... })`,
+and `pino.transport({ targets: [{ ... }] })` with a single entry that has no `level`.
+All three forms are equivalent and take the same direct path:
 
 ```text
 Main thread                                   Worker thread
@@ -114,10 +118,14 @@ logger.level gate (enabled methods) ──ThreadStream─────┘
 
 Result:
 - `logger.level` decides what is emitted.
-- `transport.level` is not used in this path.
+- no per-target level filtering happens in this path.
 ```
 
-#### B) `targets` (multiple destinations)
+#### B) `targets` with per-target `level` (one or more destinations)
+
+As soon as any entry in `targets` carries a `level`, every entry goes through
+the same per-target filtering — whether `targets` has one entry or many.
+Adding an unrelated target never changes what another target receives.
 
 ```text
 Main thread                                   Worker thread
@@ -132,14 +140,14 @@ logger.level gate (enabled methods) ──ThreadStream────┼──> tar
 Result:
 - `logger.level` is the first gate.
 - each `targets[i].level` is the second gate.
-- missing `targets[i].level` defaults to `info`.
+- within this path, a missing `targets[i].level` defaults to `info`.
 ```
 
 Summary:
 
-- Single `target`/single `pipeline`: only `logger.level` filters messages.
-- Multiple `targets`: `logger.level` is applied first, then each `targets[i].level` is applied.
-- If `targets[i].level` is missing, it defaults to `info`.
+- Single `target`/single `pipeline`/single-entry `targets` without `level`: only `logger.level` filters messages.
+- Any `targets` entry with a `level`: `logger.level` is applied first, then each `targets[i].level` is applied, no matter how many entries `targets` has.
+- The `info` default for a missing `targets[i].level` only applies inside the per-target filtering path; a single destination without `level` is not filtered at all.
 
 If you need `debug` (or lower) logs to reach one or more targets, set:
 

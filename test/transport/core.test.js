@@ -267,6 +267,59 @@ test('pino.transport with two files and dedupe', async (t) => {
   })
 })
 
+test('pino.transport with a single target with level', async (t) => {
+  const dest1 = file()
+  const transport = pino.transport({
+    targets: [{
+      level: 'error',
+      target: join(__dirname, '..', 'fixtures', 'to-file-transport.js'),
+      options: { destination: dest1 }
+    }]
+  })
+  t.after(transport.end.bind(transport))
+  const instance = pino({ level: 'debug' }, transport)
+  instance.debug('hello')
+  instance.info('hello')
+  instance.warn('hello')
+  instance.error('world')
+  await watchForWrite(dest1, 'world')
+  const lines = (await readFile(dest1, 'utf8')).trim().split('\n')
+  assert.equal(lines.length, 1)
+  const result = JSON.parse(lines[0])
+  delete result.time
+  assert.deepEqual(result, {
+    pid,
+    hostname,
+    level: 50,
+    msg: 'world'
+  })
+})
+
+test('pino.transport with a single target without level', async (t) => {
+  const dest1 = file()
+  const transport = pino.transport({
+    targets: [{
+      target: join(__dirname, '..', 'fixtures', 'to-file-transport.js'),
+      options: { destination: dest1 }
+    }]
+  })
+  t.after(transport.end.bind(transport))
+  const instance = pino({ level: 'debug' }, transport)
+  instance.debug('hello')
+  instance.info('world')
+  await watchForWrite(dest1, 'world')
+  const lines = (await readFile(dest1, 'utf8')).trim().split('\n')
+  assert.equal(lines.length, 2)
+  const result = JSON.parse(lines[0])
+  delete result.time
+  assert.deepEqual(result, {
+    pid,
+    hostname,
+    level: 20,
+    msg: 'hello'
+  })
+})
+
 test('pino.transport with an array including a pino-pretty destination', async (t) => {
   const dest1 = file()
   const dest2 = file()
