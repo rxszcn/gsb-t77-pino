@@ -1237,7 +1237,7 @@ const transport = pino.transport({
 pino(transport)
 ```
 
-Multiple transports may also be defined, and specific levels can be logged to each transport:
+One or more transports may also be defined as `targets`, and specific levels can be logged to each transport. The per-target `level` filter is applied the same way whether `targets` contains a single element or many:
 
 ```js
 const pino = require('pino')

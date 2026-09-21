@@ -102,7 +102,7 @@ pino(transport)
 
 Pino applies level filtering in two different places depending on the transport configuration.
 
-#### A) Single `target` (or single `pipeline`)
+#### A) Single `target` (or single `pipeline`) shorthand
 
 ```text
 Main thread                                   Worker thread
@@ -114,10 +114,13 @@ logger.level gate (enabled methods) ──ThreadStream─────┘
 
 Result:
 - `logger.level` decides what is emitted.
-- `transport.level` is not used in this path.
+- the `target`/`pipeline` shorthand has no per-target `level` option at all.
 ```
 
-#### B) `targets` (multiple destinations)
+This shorthand is equivalent to a `targets` array with one single element and
+no `level`: both are delivered every line that passes the `logger.level` gate.
+
+#### B) `targets` (one or more destinations)
 
 ```text
 Main thread                                   Worker thread
@@ -132,14 +135,18 @@ logger.level gate (enabled methods) ──ThreadStream────┼──> tar
 Result:
 - `logger.level` is the first gate.
 - each `targets[i].level` is the second gate.
-- missing `targets[i].level` defaults to `info`.
+- the same per-target filter is applied whether `targets` has one element or
+  many: adding or removing an unrelated target never changes which lines a
+  given target receives.
+- with two or more targets, a missing `targets[i].level` defaults to `info`;
+  a single target without `level` is not filtered (equivalent to A).
 ```
 
 Summary:
 
-- Single `target`/single `pipeline`: only `logger.level` filters messages.
-- Multiple `targets`: `logger.level` is applied first, then each `targets[i].level` is applied.
-- If `targets[i].level` is missing, it defaults to `info`.
+- `target`/`pipeline` shorthand, or a single target without `level`: only `logger.level` filters messages.
+- `targets` with a `level` set on its elements: `logger.level` is applied first, then each `targets[i].level` is applied — for a single element just the same as for many.
+- If `targets[i].level` is missing and more than one target is defined, it defaults to `info`.
 
 If you need `debug` (or lower) logs to reach one or more targets, set:
 
