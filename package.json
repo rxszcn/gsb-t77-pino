@@ -76,7 +76,7 @@
     "eslint-plugin-n": "17.23.2",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.0.0",
-    "execa": "^5.0.0",
+    "execa": "^10.0.1",
     "fastbench": "^1.0.1",
     "flush-write-stream": "^2.0.0",
     "import-fresh": "^3.2.1",
